@@ -1,0 +1,108 @@
+'use strict';
+
+const spawn = require('cross-spawn');
+const Adviser = require('adviser');
+
+const docs = require('../utils/docs');
+
+const SEVERITY_LEVEL = ['info', 'low', 'moderate', 'high', 'critical'];
+
+class MinVulnerabilityAllow extends Adviser.Rule {
+  constructor(context) {
+    super(context);
+
+    if (!this.context.options.level || SEVERITY_LEVEL.indexOf(this.context.options.level) < 0) {
+      throw new Error(`Wrong level options, should be one of: 'info', 'low', 'moderate', 'high', 'critical'`);
+    }
+
+    if (!this.context.options.skip || !Array.isArray(this.context.options.skip)) {
+      this.context.options.skip = [];
+    }
+  }
+
+  run(sandbox) {
+    let result = {};
+    let vulnerabilitiesFound = false;
+    const minVulnerabilityIndex = SEVERITY_LEVEL.indexOf(this.context.options.level);
+    const severityAccumulator = {
+      counter: {},
+      packages: []
+    };
+
+    const output = spawn.sync('npm', ['audit', '--json', 'true']);
+
+    try {
+      result = JSON.parse(output.stdout);
+
+      if (output.error) {
+        throw new Error(output.error.summary || output.error.message);
+      }
+    } catch (error) {
+      throw new Error(error);
+    }
+
+    Object.keys(result.advisories).forEach(advisorKey => {
+      if (this.context.options.skip.indexOf(advisorKey) < 0) {
+        const vulnerabilitySeverity = result.advisories[advisorKey].severity;
+        const vulnerabilitySeverityIndex = SEVERITY_LEVEL.indexOf(vulnerabilitySeverity);
+
+        if (vulnerabilitySeverityIndex >= minVulnerabilityIndex) {
+          vulnerabilitiesFound = true;
+
+          severityAccumulator.counter[vulnerabilitySeverity] =
+            severityAccumulator.counter[vulnerabilitySeverity] !== undefined
+              ? ++severityAccumulator.counter[vulnerabilitySeverity]
+              : 1;
+
+          severityAccumulator.packages.push({
+            package: result.advisories[advisorKey].module_name,
+            severity: result.advisories[advisorKey].severity
+          });
+        }
+      }
+    });
+
+    if (vulnerabilitiesFound) {
+      const message = this.getMessage(severityAccumulator.counter);
+
+      const report = {
+        message
+      };
+
+      if (this.context.verboseMode) {
+        const verbose = this.getVerboseMessage(severityAccumulator.packages);
+        report['verbose'] = verbose;
+      }
+
+      sandbox.report(report);
+    }
+  }
+
+  getMessage(severityCounter) {
+    let counterMessage = Object.keys(severityCounter).reduce((accu, item) => {
+      return `${accu} ${severityCounter[item]} ${item},`;
+    }, '');
+
+    counterMessage = counterMessage.substr(0, counterMessage.length - 1);
+
+    return `Found vulnerabilities above the value "${this.context.options.level}":${counterMessage}`;
+  }
+
+  getVerboseMessage(severityPackages) {
+    let message = severityPackages.reduce((accu, item) => {
+      return ` ${accu}   - ${item.package}: ${item.severity} \n`;
+    }, '\n');
+
+    return `Packages with found vulnerabilities: ${message}
+   Run "npm audit" for more details`;
+  }
+}
+
+MinVulnerabilityAllow.meta = {
+  category: 'Vulnerabilities',
+  description: 'Monitor for dependencies with vulnerabilities',
+  recommended: true,
+  docsUrl: docs.getURL('min-vulnerabilities-allowed')
+};
+
+module.exports = MinVulnerabilityAllow;

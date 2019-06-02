@@ -1,0 +1,7 @@
+{
+  "plugins": ["dependencies"],
+  "rules": {
+    "dependencies/min-vulnerabilities-allow": ["error", { "level": "low", "skip": ["780"] }],
+    "dependencies/licenses-whitelist": ["warn", { "whitelist": ["MIT"] }]
+  }
+}
