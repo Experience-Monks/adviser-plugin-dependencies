@@ -76,7 +76,7 @@ class LicensesWhitelist extends Adviser.Rule {
 }
 
 LicensesWhitelist.meta = {
-  category: 'Licenses',
+  category: 'Legal',
   description: 'List of whitelisted licenses',
   recommended: true,
   docsUrl: docs.getURL('licenses-whitelist')
