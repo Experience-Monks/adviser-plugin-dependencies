@@ -11,7 +11,7 @@ class MinVulnerabilityAllow extends Adviser.Rule {
   constructor(context) {
     super(context);
 
-    if (!this.context.options.level || SEVERITY_LEVEL.indexOf(this.context.options.level) < 0) {
+    if (!this.context.options.level || !SEVERITY_LEVEL.includes(this.context.options.level)) {
       throw new Error(`Wrong level options, should be one of: 'info', 'low', 'moderate', 'high', 'critical'`);
     }
 
@@ -42,7 +42,7 @@ class MinVulnerabilityAllow extends Adviser.Rule {
     }
 
     Object.keys(result.advisories).forEach(advisorKey => {
-      if (this.context.options.skip.indexOf(advisorKey) < 0) {
+      if (!this.context.options.skip.includes(advisorKey)) {
         const vulnerabilitySeverity = result.advisories[advisorKey].severity;
         const vulnerabilitySeverityIndex = SEVERITY_LEVEL.indexOf(vulnerabilitySeverity);
 
@@ -93,16 +93,16 @@ class MinVulnerabilityAllow extends Adviser.Rule {
       return ` ${accu}   - ${item.package}: ${item.severity} \n`;
     }, '\n');
 
-    return `Packages with found vulnerabilities: ${message}
+    return `Packages with vulnerabilities above ${this.context.options.level}: ${message}
    Run "npm audit" for more details`;
   }
 }
 
 MinVulnerabilityAllow.meta = {
-  category: 'Vulnerabilities',
+  category: 'Security',
   description: 'Monitor for dependencies with vulnerabilities',
   recommended: true,
-  docsUrl: docs.getURL('min-vulnerabilities-allowed')
+  docsUrl: docs.getURL('min-vulnerabilities-allow')
 };
 
 module.exports = MinVulnerabilityAllow;
