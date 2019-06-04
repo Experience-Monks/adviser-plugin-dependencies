@@ -69,6 +69,7 @@
   "dependencies": {
     "adviser": "^0.1.0",
     "cross-spawn": "^6.0.5",
+    "depcheck": "^0.8.0",
     "hyperlinker": "^1.0.0",
     "license-checker": "^25.0.1",
     "requireindex": "^1.2.0",

@@ -10,7 +10,7 @@
   "author": "Iran Reyes <iranreyesfleitas@gmail.com> (http://www.iranreyes.com)",
   "license": "MIT",
   "dependencies": {
-    "adviser-plugin-audit-npm": "0.0.3",
+    "adviser": "^0.2.0",
     "async": "^3.0.1",
     "bluebird": "^3.5.5",
     "chalk": "^2.4.2",

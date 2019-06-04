@@ -7,6 +7,7 @@
       { "whitelist": ["MIT", "ISC", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause"] }
     ],
     "dependencies/not-allowed-packages": ["warn", { "packages": ["jquery", "lodash", "kill-port", "la-tata"] }],
-    "dependencies/outdated-packages": ["warn", { "criteria": "major", "exclude": [] }]
+    "dependencies/outdated-packages": ["warn", { "criteria": "major", "exclude": [] }],
+    "dependencies/unused-packages": ["warn", { "exclude": ["chalk", "async", "typeorm"] }]
   }
 }

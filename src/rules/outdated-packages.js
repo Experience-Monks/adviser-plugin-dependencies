@@ -58,8 +58,6 @@ class OutDatedPackages extends Adviser.Rule {
       };
 
       if (this.context.verboseMode) {
-        // console.log(outdatedAccumulator);
-
         const verbose = this.getVerboseMessage(outdatedAccumulator);
         report['verbose'] = verbose;
       }
