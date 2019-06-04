@@ -81,3 +81,4 @@ To run your rules with `adviser`, we recommend you to create an empty folder (We
 - [licenses-whitelist](docs/rules/licenses-whitelist.md)
 - [not-allowed-packages](docs/rules/not-allowed-packages.md)
 - [outdated-packages](docs/rules/outdated-packages.md)
+- [unused-packages](docs/rules/unused-packages.md)
