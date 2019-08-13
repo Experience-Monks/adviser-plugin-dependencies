@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.3.0"></a>
+# [0.3.0](https://github.com/Jam3/adviser-plugin-dependencies/compare/v0.1.0...v0.3.0) (2019-08-13)
+
+
+### Bug Fixes
+
+* issue when version is not valid ([dbd2ee8](https://github.com/Jam3/adviser-plugin-dependencies/commit/dbd2ee8))
+* vulnerabilities in dependencies ([940a081](https://github.com/Jam3/adviser-plugin-dependencies/commit/940a081))
+
+
+### Features
+
+* add unused packages rule ([7313666](https://github.com/Jam3/adviser-plugin-dependencies/commit/7313666))
+
+
+
 <a name="0.2.0"></a>
 # [0.2.0](https://github.com/Jam3/adviser-plugin-dependencies/compare/v0.1.0...v0.2.0) (2019-06-04)
 
