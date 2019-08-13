@@ -2,6 +2,7 @@
 
 const spawn = require('cross-spawn');
 const semverDiff = require('semver-diff');
+const semver = require('semver');
 const Adviser = require('adviser');
 
 const docs = require('../utils/docs');
@@ -42,8 +43,12 @@ class OutDatedPackages extends Adviser.Rule {
 
     Object.keys(result).forEach(pkg => {
       if (!this.context.options.exclude.includes(pkg)) {
-        if (semverDiff(result[pkg].current, result[pkg].latest) === this.context.options.criteria) {
-          outdatedAccumulator.push({ ...result[pkg], pkg });
+        if (semver.valid(result[pkg].current) && semver.valid(result[pkg].latest)) {
+          const semverDiffResult = semverDiff(result[pkg].current, result[pkg].latest);
+
+          if (semverDiffResult === this.context.options.criteria) {
+            outdatedAccumulator.push({ ...result[pkg], pkg });
+          }
         }
       }
     });
