@@ -15,15 +15,17 @@ class MinVulnerabilityAllow extends Adviser.Rule {
       throw new Error(`Wrong level options, should be one of: 'info', 'low', 'moderate', 'high', 'critical'`);
     }
 
-    if (!this.context.options.skip || !Array.isArray(this.context.options.skip)) {
-      this.context.options.skip = [];
-    }
+    const defaultProps = {
+      skip: []
+    };
+
+    this.parsedOptions = { ...defaultProps, ...this.context.options };
   }
 
   run(sandbox) {
     let result = {};
     let vulnerabilitiesFound = false;
-    const minVulnerabilityIndex = SEVERITY_LEVEL.indexOf(this.context.options.level);
+    const minVulnerabilityIndex = SEVERITY_LEVEL.indexOf(this.parsedOptions.level);
     const severityAccumulator = {
       counter: {},
       packages: []
@@ -41,26 +43,28 @@ class MinVulnerabilityAllow extends Adviser.Rule {
       throw new Error(error);
     }
 
-    Object.keys(result.advisories).forEach(advisorKey => {
-      if (!this.context.options.skip.includes(advisorKey)) {
-        const vulnerabilitySeverity = result.advisories[advisorKey].severity;
-        const vulnerabilitySeverityIndex = SEVERITY_LEVEL.indexOf(vulnerabilitySeverity);
+    if (result.advisories) {
+      Object.keys(result.advisories).forEach(advisorKey => {
+        if (!this.parsedOptions.skip.includes(advisorKey)) {
+          const vulnerabilitySeverity = result.advisories[advisorKey].severity;
+          const vulnerabilitySeverityIndex = SEVERITY_LEVEL.indexOf(vulnerabilitySeverity);
 
-        if (vulnerabilitySeverityIndex >= minVulnerabilityIndex) {
-          vulnerabilitiesFound = true;
+          if (vulnerabilitySeverityIndex >= minVulnerabilityIndex) {
+            vulnerabilitiesFound = true;
 
-          severityAccumulator.counter[vulnerabilitySeverity] =
-            severityAccumulator.counter[vulnerabilitySeverity] !== undefined
-              ? ++severityAccumulator.counter[vulnerabilitySeverity]
-              : 1;
+            severityAccumulator.counter[vulnerabilitySeverity] =
+              severityAccumulator.counter[vulnerabilitySeverity] !== undefined
+                ? ++severityAccumulator.counter[vulnerabilitySeverity]
+                : 1;
 
-          severityAccumulator.packages.push({
-            package: result.advisories[advisorKey].module_name,
-            severity: result.advisories[advisorKey].severity
-          });
+            severityAccumulator.packages.push({
+              package: result.advisories[advisorKey].module_name,
+              severity: result.advisories[advisorKey].severity
+            });
+          }
         }
-      }
-    });
+      });
+    }
 
     if (vulnerabilitiesFound) {
       const message = this.getMessage(severityAccumulator.counter);
@@ -85,7 +89,7 @@ class MinVulnerabilityAllow extends Adviser.Rule {
 
     counterMessage = counterMessage.substr(0, counterMessage.length - 1);
 
-    return `Found vulnerabilities above the value "${this.context.options.level}":${counterMessage}`;
+    return `Found vulnerabilities above the value "${this.parsedOptions.level}":${counterMessage}`;
   }
 
   getVerboseMessage(severityPackages) {
@@ -93,7 +97,7 @@ class MinVulnerabilityAllow extends Adviser.Rule {
       return ` ${accu}   - ${item.package}: ${item.severity} \n`;
     }, '\n');
 
-    return `Packages with vulnerabilities above ${this.context.options.level}: ${message}
+    return `Packages with vulnerabilities above ${this.parsedOptions.level}: ${message}
    Run "npm audit" for more details`;
   }
 }
