@@ -5,12 +5,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "check": "node ./node_modules/adviser/src/cli/bin/adviser.js"
+    "check": "adviser"
   },
   "author": "Iran Reyes <iranreyesfleitas@gmail.com> (http://www.iranreyes.com)",
   "license": "MIT",
   "dependencies": {
-    "adviser": "^0.2.0",
+    "adviser": "^0.3.0",
+    "adviser-plugin-dependencies": "file:../..",
     "async": "^3.0.1",
     "bluebird": "^3.5.5",
     "chalk": "^2.4.2",
