@@ -13,14 +13,14 @@ class UnusedPackages extends Adviser.Rule {
       exclude: []
     };
 
-    this.context.options = { ...defaultProps, ...this.context.options };
+    this.parsedOptions = { ...defaultProps, ...this.context.options };
   }
 
   run(sandbox) {
     return new Promise((resolve, reject) => {
       depcheck(this.context.filesystem.dirname, { skipMissing: true, withoutDev: true })
         .then(unused => {
-          const unusedDependencies = unused.dependencies.filter(dep => !this.context.options.exclude.includes(dep));
+          const unusedDependencies = unused.dependencies.filter(dep => !this.parsedOptions.exclude.includes(dep));
           if (unusedDependencies.length > 0) {
             const message = `Found ${unusedDependencies.length} unused package`;
 

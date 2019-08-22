@@ -22,7 +22,7 @@ class LicensesWhitelist extends Adviser.Rule {
       excludePackage: []
     };
 
-    this.context.options = { ...defaultProps, ...this.context.options };
+    this.parsedOptions = { ...defaultProps, ...this.context.options };
   }
 
   run(sandbox) {
@@ -31,8 +31,8 @@ class LicensesWhitelist extends Adviser.Rule {
         {
           start: this.context.filesystem.dirname,
           unknown: true,
-          production: !this.context.options.includeNoProdPackages,
-          excludePackages: this.context.options.excludePackage.join(';')
+          production: !this.parsedOptions.includeNoProdPackages,
+          excludePackages: this.parsedOptions.excludePackage.join(';')
         },
         (err, packages) => {
           if (err) {
@@ -41,7 +41,7 @@ class LicensesWhitelist extends Adviser.Rule {
             if (packages) {
               const packageKeysList = Object.keys(packages);
               const noWhitelistedLicenses = packageKeysList.filter(packageKey => {
-                return !this.context.options.whitelist.includes(packages[packageKey].licenses);
+                return !this.parsedOptions.whitelist.includes(packages[packageKey].licenses);
               });
 
               if (noWhitelistedLicenses.length > 0) {

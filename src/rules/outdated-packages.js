@@ -22,7 +22,7 @@ class OutDatedPackages extends Adviser.Rule {
       exclude: []
     };
 
-    this.context.options = { ...defaultProps, ...this.context.options };
+    this.parsedOptions = { ...defaultProps, ...this.context.options };
   }
 
   run(sandbox) {
@@ -42,11 +42,11 @@ class OutDatedPackages extends Adviser.Rule {
     }
 
     Object.keys(result).forEach(pkg => {
-      if (!this.context.options.exclude.includes(pkg)) {
+      if (!this.parsedOptions.exclude.includes(pkg)) {
         if (semver.valid(result[pkg].current) && semver.valid(result[pkg].latest)) {
           const semverDiffResult = semverDiff(result[pkg].current, result[pkg].latest);
 
-          if (semverDiffResult === this.context.options.criteria) {
+          if (semverDiffResult === this.parsedOptions.criteria) {
             outdatedAccumulator.push({ ...result[pkg], pkg });
           }
         }
@@ -56,7 +56,7 @@ class OutDatedPackages extends Adviser.Rule {
     if (outdatedAccumulator.length > 0) {
       const message = `Found outdated ${outdatedAccumulator.length} package${
         outdatedAccumulator.length > 1 ? 's' : ''
-      } with ${this.context.options.criteria} updates`;
+      } with ${this.parsedOptions.criteria} updates`;
 
       const report = {
         message
@@ -76,7 +76,7 @@ class OutDatedPackages extends Adviser.Rule {
       return ` ${accu}   - ${item.pkg}: ${item.current} -> ${item.latest} \n`;
     }, '\n');
 
-    return `Outdated dependencies with ${this.context.options.criteria} updates: ${message}
+    return `Outdated dependencies with ${this.parsedOptions.criteria} updates: ${message}
    Run "npm outdated" for more details`;
   }
 }
