@@ -15,7 +15,7 @@ class PackageSize extends Adviser.Rule {
     }
 
     const defaultProps = {
-      threshold: 30000,
+      threshold: 30,
       whitelist: ['adviser', 'adviser-plugin-dependencies', 'package-build-stats']
     };
 
@@ -34,43 +34,61 @@ class PackageSize extends Adviser.Rule {
     return packagejson;
   }
 
+  _generateReport(results = [], skips = [], isVerbose = false) {
+    const report = `Found heavy packages: \n${results
+      .map(result => {
+        return `\t${result.name} ${isVerbose ? result.gzip + 'kb' : null}\n`;
+      })
+      .join('')}\n
+      Packages skipped:\n${skips
+        .map(skip => {
+          return `\t${skip.name}\n`;
+        })
+        .join('')}`;
+
+    return report;
+  }
+
   async run(sandbox) {
     const packagejson = this._getPackageJsonPath();
     let packages = [];
-    let promises = [];
-    let results = [];
+    const promises = [];
+    const results = [];
+    const skip = [];
 
-    if (packagejson['dependencies'] !== undefined) {
+    if (packagejson.hasOwnProperty('dependencies')) {
       packages = packages.concat(Object.keys(packagejson['dependencies']));
     }
 
-    packages.map(p => {
-      if (!this.parsedOptions.whitelist.includes(p)) {
-        promises.push(getBuiltPackageStats(p, { client: 'npm' }));
+    packages.forEach(pkg => {
+      if (!this.parsedOptions.whitelist.includes(pkg)) {
+        promises.push(getBuiltPackageStats(pkg, { client: 'npm' }).catch(() => null));
       }
     });
 
-    await Promise.all(promises).then(values => {
-      values.map((value, index) => {
-        results.push({ name: packages[index], gzip: value.gzip });
-      });
+    const values = await Promise.all(promises);
 
-      const heavyPackages = results.filter(result => result.gzip >= this.parsedOptions.threshold);
+    values.forEach((value, index) => {
+      if (!value) {
+        skip.push({ name: packages[index] });
+      }
 
-      if (heavyPackages.length > 0) {
-        const message = `Found heavy packages: \n${heavyPackages
-          .map(p => {
-            return `\t${p.name} ${(p.gzip / 1000).toFixed(2)}kb\n`;
-          })
-          .join('')}`;
-
-        const report = {
-          message
-        };
-
-        sandbox.report(report);
+      if (value && value.gzip >= this.parsedOptions.threshold) {
+        results.push({ name: packages[index], gzip: (value.gzip / 1000).toFixed(2) });
       }
     });
+
+    if (results.length > 0) {
+      const message = this._generateReport(results, skip);
+      const verbose = this._generateReport(results, skip, true);
+
+      const report = {
+        message,
+        verbose
+      };
+
+      sandbox.report(report);
+    }
   }
 }
 
@@ -78,7 +96,7 @@ PackageSize.meta = {
   category: 'Performance',
   description: 'Identifies large size dependencies',
   recommended: true,
-  docsUrl: docs.getURL('heavy-packages')
+  docsUrl: docs.getURL('package-size')
 };
 
 module.exports = PackageSize;

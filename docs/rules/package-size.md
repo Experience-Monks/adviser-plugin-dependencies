@@ -5,18 +5,18 @@ Enables the ability to identify dependencies with a large file size when bundled
 ## Syntax
 
 ```
-"dependencies/package-size": ["warn", { "threshold": "2000", "whitelist": ["react"] }]
+"dependencies/package-size": ["warn", { "threshold": "20", "whitelist": ["react"] }]
 ```
 
 The rule `package-size` receives two arguments: `threshold` and `whitelist`.
 
 ### threshold
 
-Number - representing the package size limit in bytes that will trigger an error / warning when exceeded.
+Number - representing the package size limit in kilobytes that will trigger an error / warning when exceeded.
 
 Optional
 
-If no threshold is specified, Adviser will fallback to a default of 30000 bytes.
+If no threshold is specified, Adviser will fallback to a default of 30 kb.
 
 ### whitelist
 
