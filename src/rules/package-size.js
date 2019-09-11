@@ -59,9 +59,13 @@ class PackageSize extends Adviser.Rule {
           const dependency = { name: name, version: '' };
 
           try {
-            dependency.version = require(`${this.context.filesystem.dirname}/node_modules/${
-              dependency.name
-            }/package.json`).version;
+            const dependancyPath = path.join(
+              this.context.filesystem.dirname,
+              'node_modules',
+              dependency.name,
+              'package.json'
+            );
+            dependency.version = require(dependancyPath).version;
           } catch {
             dependency.version = 'latest';
           }
