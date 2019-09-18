@@ -22,17 +22,68 @@ class PackageSize extends Adviser.Rule {
     this.parsedOptions = { ...defaultProps, ...this.context.options };
   }
 
+  _getDependencyNames(pkgJson = {}, whitelist = []) {
+    if (pkgJson.hasOwnProperty('dependencies') && typeof pkgJson === 'object') {
+      const names = Object.keys(pkgJson['dependencies']);
+      return names.filter(name => !whitelist.includes(name));
+    } else {
+      return [];
+    }
+  }
+
+  _extractDependencyVersions(directoryFragments = [], names = []) {
+    return names.map(function(name) {
+      try {
+        const dependencyPath = path.join(...directoryFragments, name, 'package.json');
+        const dependencyMeta = require(dependencyPath);
+        return { name: name, version: dependencyMeta.version };
+      } catch {
+        return { name: name, version: 'latest' };
+      }
+    });
+  }
+
+  _generateDependencyStats(statBuilder, packages = []) {
+    const statPromises = packages.map(async function(pkg) {
+      const stats = await statBuilder(`${pkg.name}@${pkg.version}`, { client: 'npm' }).catch(() => null);
+      const fullData = {
+        name: pkg.name,
+        version: pkg.version,
+        size: stats && stats.gzip ? (stats.gzip / 1000).toFixed(2) : null
+      };
+      return fullData;
+    });
+
+    return Promise.all(statPromises);
+  }
+
+  _identifySkips(packages = []) {
+    return packages.filter(pkg => !pkg.size);
+  }
+
+  _identifyLargePackages(packages = [], threshold = 0) {
+    return packages.filter(pkg => pkg.size && pkg.size >= threshold);
+  }
+
   _generateReport(packages = []) {
-    const inlinePackages = packages.map(pkg => pkg.name).join(', ');
-    return `Found heavy packages: ${inlinePackages}`;
+    if (packages.length > 0) {
+      const inlinePackages = packages.map(pkg => pkg.name).join(', ');
+      return `Found heavy packages: ${inlinePackages}`;
+    } else {
+      return 'No heavy packages found.';
+    }
   }
 
   _generateVerboseReport(packages = [], skips = []) {
-    const inlinePackages = packages.reduce((accu, pkg) => {
-      return ` ${accu}   - ${pkg.name} ${pkg.version}: ${pkg.gzip} kb \n`;
-    }, '\n');
+    let baseMessage = 'No heavy packages found.';
 
-    const baseMessage = `Found heavy packages: ${inlinePackages}`;
+    if (packages.length > 0) {
+      const inlinePackages = packages.reduce((accu, pkg) => {
+        return ` ${accu}   - ${pkg.name} ${pkg.version}: ${pkg.size} kb \n`;
+      }, '\n');
+
+      baseMessage = `Found heavy packages: ${inlinePackages}`;
+    }
 
     if (skips.length > 0) {
       const skipPackages = skips.reduce((accu, pkg) => {
@@ -47,60 +98,16 @@ class PackageSize extends Adviser.Rule {
 
   async run(sandbox) {
     const packagejson = require(path.join(this.context.filesystem.dirname, 'package.json'));
-    const processing = { packages: [], stats: [] };
-    const promises = [];
-    const results = { complete: [], skip: [] };
+    const names = this._getDependencyNames(packagejson, this.parsedOptions.whitelist);
+    const versions = this._extractDependencyVersions([this.context.filesystem.dirname, 'node_modules'], names);
+    const stats = await this._generateDependencyStats(getBuiltPackageStats, versions);
+    const skips = this._identifySkips(stats);
+    const largePackages = this._identifyLargePackages(stats, this.parsedOptions.threshold);
 
-    if (packagejson.hasOwnProperty('dependencies')) {
-      const dependencies = Object.keys(packagejson['dependencies']);
-
-      dependencies.forEach((name, index) => {
-        if (!this.parsedOptions.whitelist.includes(name)) {
-          const dependency = { name: name, version: '' };
-
-          try {
-            const dependancyPath = path.join(
-              this.context.filesystem.dirname,
-              'node_modules',
-              dependency.name,
-              'package.json'
-            );
-            dependency.version = require(dependancyPath).version;
-          } catch {
-            dependency.version = 'latest';
-          }
-
-          processing.packages.push(dependency);
-          promises.push(
-            getBuiltPackageStats(`${dependency.name}@${dependency.version}`, { client: 'npm' }).catch(() => null)
-          );
-        }
-      });
-    }
-
-    processing.stats = await Promise.all(promises);
-
-    processing.stats.forEach((value, index) => {
-      if (!value) {
-        results.skip.push({ name: processing.packages[index].name });
-      }
-
-      if (value && value.gzip >= this.parsedOptions.threshold * 1000) {
-        results.complete.push({
-          name: processing.packages[index].name,
-          version: processing.packages[index].version,
-          gzip: (value.gzip / 1000).toFixed(2)
-        });
-      }
-    });
-
-    if (results.complete.length > 0) {
-      const message = this._generateReport(results.complete);
-      const verbose = this._generateVerboseReport(results.complete, results.skip);
-
+    if (largePackages.length > 0) {
       const report = {
-        message,
-        verbose
+        message: this._generateReport(largePackages),
+        verbose: this._generateVerboseReport(largePackages, skips)
       };
 
       sandbox.report(report);
