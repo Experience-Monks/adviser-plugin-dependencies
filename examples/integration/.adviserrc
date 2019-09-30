@@ -8,6 +8,7 @@
     ],
     "dependencies/not-allowed-packages": ["warn", { "packages": ["jquery", "lodash", "kill-port", "la-tata"] }],
     "dependencies/outdated-packages": ["warn", { "criteria": "major", "exclude": [] }],
-    "dependencies/unused-packages": ["warn", { "exclude": ["chalk", "async", "typeorm"] }]
+    "dependencies/unused-packages": ["warn", { "exclude": ["chalk", "async", "typeorm"] }],
+    "dependencies/package-size": ["warn", { "threshold": 25, "whitelist": ['react'] }],
   }
 }
