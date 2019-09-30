@@ -5,7 +5,7 @@ Enables the ability to identify dependencies with a large file size when bundled
 ## Syntax
 
 ```
-"dependencies/package-size": ["warn", { "threshold": "20", "whitelist": ["react"] }]
+"dependencies/package-size": ["warn", { "threshold": 20, "whitelist": ["react"] }]
 ```
 
 The rule `package-size` receives two arguments: `threshold` and `whitelist`.
