@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.4.0"></a>
+# [0.4.0](https://github.com/Jam3/adviser-plugin-dependencies/compare/v0.3.0...v0.4.0) (2019-09-30)
+
+
+### Bug Fixes
+
+* acquire version from module package.json, resolve package name discrepancy bug ([72a285d](https://github.com/Jam3/adviser-plugin-dependencies/commit/72a285d))
+* add protection in case audit fails ([553e151](https://github.com/Jam3/adviser-plugin-dependencies/commit/553e151))
+* dependency vulnerabilities ([8781268](https://github.com/Jam3/adviser-plugin-dependencies/commit/8781268))
+* incorporate feedback from iran ([c33ae19](https://github.com/Jam3/adviser-plugin-dependencies/commit/c33ae19))
+* incorporate feedback from nick, iran ([88ab6d4](https://github.com/Jam3/adviser-plugin-dependencies/commit/88ab6d4))
+* packages vulnerabilities ([a0dc3bf](https://github.com/Jam3/adviser-plugin-dependencies/commit/a0dc3bf))
+* resolve security audit ([25d1db6](https://github.com/Jam3/adviser-plugin-dependencies/commit/25d1db6))
+* restore integration rules ([199996e](https://github.com/Jam3/adviser-plugin-dependencies/commit/199996e))
+* use path.join() to forumate dependancy paths ([3303c72](https://github.com/Jam3/adviser-plugin-dependencies/commit/3303c72))
+
+
+### Features
+
+* add 'package-size' rule ([1c2c396](https://github.com/Jam3/adviser-plugin-dependencies/commit/1c2c396))
+* migrate plugin index to new plugin structure ([52c5103](https://github.com/Jam3/adviser-plugin-dependencies/commit/52c5103))
+
+
+
 <a name="0.3.0"></a>
 # [0.3.0](https://github.com/Jam3/adviser-plugin-dependencies/compare/v0.1.0...v0.3.0) (2019-08-13)
 
