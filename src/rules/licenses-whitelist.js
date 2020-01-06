@@ -63,8 +63,9 @@ class LicensesWhitelist extends Adviser.Rule {
                 }
 
                 sandbox.report(report);
-                resolve();
               }
+
+              resolve();
             } else {
               reject(err);
             }
