@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.2](https://github.com/Jam3/adviser-plugin-dependencies/compare/v0.4.1...v0.4.2) (2020-02-26)
+
+
+### Bug Fixes
+
+* resolve vulnarabilities associated with build-package-stats module by updating to version 6.1.2 ([698712d](https://github.com/Jam3/adviser-plugin-dependencies/commit/698712d36d60e7105e5bbed7cde9feb3d1137b94))
+* update package.json to reflect new build-package-stats version ([ff0adc0](https://github.com/Jam3/adviser-plugin-dependencies/commit/ff0adc0f4e92f017be1df3559877553232e8af15))
+
 ### [0.4.1](https://github.com/Jam3/adviser-plugin-dependencies/compare/v0.4.0...v0.4.1) (2020-01-06)
 
 
