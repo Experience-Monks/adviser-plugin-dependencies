@@ -37,7 +37,7 @@ class PackageSize extends Adviser.Rule {
         const dependencyPath = path.join(...directoryFragments, name, 'package.json');
         const dependencyMeta = require(dependencyPath);
         return { name: name, version: dependencyMeta.version };
-      } catch {
+      } catch (_e) {
         return { name: name, version: 'latest' };
       }
     });
