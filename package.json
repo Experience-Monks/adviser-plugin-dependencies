@@ -77,6 +77,8 @@
     "hyperlinker": "^1.0.0",
     "license-checker": "^25.0.1",
     "package-build-stats": "^7.0.2",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.8",
     "requireindex": "^1.2.0",
     "semver": "^6.3.0",
     "semver-diff": "^3.1.0",
