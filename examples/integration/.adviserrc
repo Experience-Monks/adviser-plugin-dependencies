@@ -1,16 +1,15 @@
 {
-  "plugins": [
-    "dependencies"
-  ],
+  "plugins": ["dependencies"],
   "rules": {
-    "dependencies/suspicious-packages": [
+    "dependencies/min-vulnerabilities-allow": ["error", { "level": "low", "skip": ["780"] }],
+    "dependencies/licenses-whitelist": [
       "warn",
-      {
-        "indicators":
-          {
-            "stars": 4
-          }
-      }
-    ]
+      { "whitelist": ["MIT", "ISC", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause"] }
+    ],
+    "dependencies/not-allowed-packages": ["warn", { "packages": ["jquery", "lodash", "kill-port", "la-tata"] }],
+    "dependencies/outdated-packages": ["warn", { "criteria": "major", "exclude": [] }],
+    "dependencies/unused-packages": ["warn", { "exclude": ["chalk", "async", "typeorm"] }],
+    "dependencies/package-size": ["warn", { "threshold": 25, "whitelist": ['react'] }],
+    "dependencies/suspicious-packages": ["warn",{"indicators":{"stars": 200,},"whitelist": ['async']}],
   }
 }

@@ -1,6 +1,5 @@
 'use strict';
 
-const fs = require('fs');
 const path = require('path');
 const request = require('request-promise-native');
 const Adviser = require('adviser');
@@ -20,73 +19,78 @@ class SuspiciousPackage extends Adviser.Rule {
   constructor(context) {
     super(context);
 
-    if (
-      this.context.options.indicators.length < 1 ||
-      !this.context.options.indicators ||
-      Array.isArray(this.context.options.indicators)
-    ) {
-      throw new Error(`Wrong indicators, an array with indicators is expected`);
-    }
+    const defaultProps = {
+      indicators: {},
+      whitelist: ['adviser', 'adviser-plugin-dependencies']
+    };
+    this.parsedOptions = {};
+    this.parsedOptions.indicators = { ...defaultProps.indicators, ...this.context.options.indicators };
+    this.parsedOptions.whitelist = [...defaultProps.whitelist, ...this.context.options.whitelist];
     this.packageData = this._genPackageData();
-    this.parsedOptions = { ...this.context.options };
   }
 
   async run(sandbox) {
-    var lastRuntime = await this._genRuntime();
-    if (!lastRuntime) {
-      lastRuntime = Date.now();
-    }
+    const suspiciousPackages = [];
+    const indicators = Object.values(INDICATORS).filter(indicator =>
+      Object.keys(this.parsedOptions.indicators).includes(indicator)
+    );
 
-    const indicators = this.parsedOptions.indicators;
-
-    let packages = await this._getValidPackages().map(pkg => {
-      const packageData = { packageName: pkg };
-      console.log(indicators);
-      indicators.keys(indicator => {
-        console.log(this.packageData);
-        switch (indicator) {
-          case INDICATORS.STARS:
-            this.packageData[INDICATORS.STARS] = this._genPackageStars(pkg);
-            break;
-        }
-      });
-      return packageData;
+    await this._forEachAsync(indicators, async indicator => {
+      const pkgs = () => this._getPackages().filter(pkg => !suspiciousPackages.includes(pkg));
+      switch (indicator) {
+        case INDICATORS.STARS:
+          console.log('here');
+          suspiciousPackages.push(...(await this._validatePackage(pkgs(), this._genPackageStars, INDICATORS.STARS)));
+          break;
+        case INDICATORS.DOWNLOADS:
+          suspiciousPackages.push(
+            ...(await this._validatePackage(pkgs(), this._genDownloadCount, INDICATORS.DOWNLOADS))
+          );
+          break;
+        case INDICATORS.LAST_UPDATE:
+          suspiciousPackages.push(
+            ...(await this._validatePackage(pkgs(), this._genPackageLastUpdated, INDICATORS.LAST_UPDATE))
+          );
+          break;
+        case INDICATORS.MAINTAINERS:
+          suspiciousPackages.push(
+            ...(await this._validatePackage(pkgs(), this._genPackageMaintainers, INDICATORS.MAINTAINERS))
+          );
+          break;
+        case INDICATORS.OPEN_ISSUES:
+          suspiciousPackages.push(
+            ...(await this._validatePackage(pkgs(), this._genPackageOpenIssues, INDICATORS.OPEN_ISSUES))
+          );
+          break;
+        case INDICATORS.WATCHERS:
+          suspiciousPackages.push(
+            ...(await this._validatePackage(pkgs(), this._genPackageWatchers, INDICATORS.WATCHERS))
+          );
+          break;
+        case INDICATORS.FORKS:
+          suspiciousPackages.push(...(await this._validatePackage(pkgs(), this._genPackageForks, INDICATORS.FORKS)));
+          break;
+      }
     });
-    console.log(packages);
-
-    // selected indicators to look for on packages
-    // can use dot notation to scry through
-    // let indicators = this.parsedOptions.indicators;
-
-    // console.log(await this._genDownloadCount(packages[0]));
-    // console.log(await this._genPackageLastUpdated(packages[0]));
-    // console.log(await this._genPackageMaintainers(packages[0]));
-    // console.log(await this._genPackageOpenIssues(packages[0]));
-    // console.log(await this._genPackageStars(packages[0]));
-    // console.log(await this._genPackageForks(packages[0]));
-
-    this._setRuntime();
-    // }
+    console.log(suspiciousPackages);
   }
 
-  _getValidPackages() {
+  async _filterAsync(arr = [], predicator = () => {}) {
+    const results = await Promise.all(arr.map(val => predicator(val)));
+    return arr.filter((_value, i) => results[i]);
+  }
+
+  async _forEachAsync(arr = [], cb = () => {}) {
+    await Promise.all(arr.map(cb));
+  }
+
+  _getPackages() {
     const packagejson = require(path.join(this.context.filesystem.dirname, 'package.json'));
     return DEPENDENCIES.flatMap(dep => {
       if (packagejson[dep] !== undefined) {
         return Object.keys(packagejson[dep]);
       }
-    }).filter(pkg => pkg);
-  }
-
-  _genPackageChangeTime() {
-    return new Promise((resolve, reject) => {
-      fs.stat(path.join(this.context.filesystem.dirname, 'package.json'), (err, stats) => {
-        if (!err) {
-          resolve(stats.ctimeMs);
-        }
-        return reject(err);
-      });
-    });
+    }).filter(pkgName => pkgName !== undefined && pkgName !== null && !this.parsedOptions.whitelist.includes(pkgName));
   }
 
   // Memoized
@@ -112,55 +116,78 @@ class SuspiciousPackage extends Adviser.Rule {
           throw err;
         });
     }
-    throw new Error(`A valid package name is expected`);
+    throw new Error(`"${packageName}" is not valid a package name`);
   }
 
-  async _genPackageLastUpdated(packageName = '') {
+  _genPackageLastUpdated = async (packageName = '') => {
+    const monthInSeconds = 2419200000;
     if (packageName) {
-      let { metadata } = await this.packageData(packageName);
-      if (metadata) {
-        return metadata.date;
-      }
+      return request({ uri: `https://registry.npmjs.org/${packageName}`, json: true })
+        .then(data => (Date.now() - Date.parse(data.time.modified)) / monthInSeconds)
+        .catch(err => {
+          throw err;
+        });
     }
-    throw new Error(`A valid package name is expected`);
-  }
+    throw new Error(`"${packageName}" is not valid a package name`);
+  };
 
-  async _genPackageMaintainers(packageName = '') {
+  _genPackageMaintainers = async (packageName = '') => {
     if (packageName) {
       let { metadata } = await this.packageData(packageName);
       if (metadata) {
         return metadata.maintainers.length;
       }
     }
-    throw new Error(`A valid package name is expected`);
-  }
+    throw new Error(`"${packageName}" is not valid a package name`);
+  };
 
-  async _genPackageOpenIssues(packageName = '') {
+  _genPackageOpenIssues = async (packageName = '') => {
     if (packageName) {
       let { github } = await this.packageData(packageName);
       if (github) {
         return github.issues && github.issues.count;
       }
     }
-    throw new Error(`A valid package name is expected`);
-  }
+    throw new Error(`"${packageName}" is not valid a package name`);
+  };
 
-  async _genPackageStars(packageName = '') {
+  _genPackageStars = async (packageName = '') => {
     if (packageName) {
       let { github } = await this.packageData(packageName);
       if (github) {
         return github.starsCount;
       }
     }
-    throw new Error(`A valid package name is expected`);
-  }
+    throw new Error(`"${packageName}" is not valid a package name`);
+  };
 
-  async _genPackageForks(packageName = '') {
+  _genPackageWatchers = async (packageName = '') => {
+    if (packageName) {
+      let { github } = await this.packageData(packageName);
+      return github.subscribersCount;
+    }
+    throw new Error(`"${packageName}" is not valid a package name`);
+  };
+
+  _genPackageForks = async (packageName = '') => {
     if (packageName) {
       let { github } = await this.packageData(packageName);
       return github.forksCount;
     }
-    throw new Error(`A valid package name is expected`);
+    throw new Error(`"${packageName}" is not valid a package name`);
+  };
+
+  async _validatePackage(packages = [], indicatorFn = () => {}, indicator = '') {
+    if (Array.isArray(packages) && packages.length > 0) {
+      return this._filterAsync(packages, async pkg => {
+        if (indicator === INDICATORS.OPEN_ISSUES || indicator === INDICATORS.LAST_UPDATE) {
+          return (await indicatorFn(pkg)) > this.parsedOptions.indicators[indicator];
+        } else {
+          return (await indicatorFn(pkg)) < this.parsedOptions.indicators[indicator];
+        }
+      });
+    }
+    throw new Error('A valid array is expected');
   }
 }
 
