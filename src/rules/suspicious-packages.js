@@ -31,6 +31,7 @@ class SuspiciousPackage extends Adviser.Rule {
 
   async run(sandbox) {
     const suspiciousPackages = [];
+    const verboseObj = {};
     const indicators = Object.values(INDICATORS).filter(indicator =>
       Object.keys(this.parsedOptions.indicators).includes(indicator)
     );
@@ -39,40 +40,48 @@ class SuspiciousPackage extends Adviser.Rule {
       const pkgs = () => this._getPackages().filter(pkg => !suspiciousPackages.includes(pkg));
       switch (indicator) {
         case INDICATORS.STARS:
-          console.log('here');
-          suspiciousPackages.push(...(await this._validatePackage(pkgs(), this._genPackageStars, INDICATORS.STARS)));
+          verboseObj[indicator] = await this._validatePackage(pkgs(), this._genPackageStars, indicator);
+          suspiciousPackages.push(...verboseObj[indicator]);
           break;
         case INDICATORS.DOWNLOADS:
-          suspiciousPackages.push(
-            ...(await this._validatePackage(pkgs(), this._genDownloadCount, INDICATORS.DOWNLOADS))
-          );
+          verboseObj[indicator] = await this._validatePackage(pkgs(), this._genDownloadCount, indicator);
+          suspiciousPackages.push(...verboseObj[indicator]);
           break;
         case INDICATORS.LAST_UPDATE:
-          suspiciousPackages.push(
-            ...(await this._validatePackage(pkgs(), this._genPackageLastUpdated, INDICATORS.LAST_UPDATE))
-          );
+          verboseObj[indicator] = await this._validatePackage(pkgs(), this._genPackageLastUpdated, indicator);
+          suspiciousPackages.push(...verboseObj[indicator]);
           break;
         case INDICATORS.MAINTAINERS:
-          suspiciousPackages.push(
-            ...(await this._validatePackage(pkgs(), this._genPackageMaintainers, INDICATORS.MAINTAINERS))
-          );
+          verboseObj[indicator] = await this._validatePackage(pkgs(), this._genPackageMaintainers, indicator);
+          suspiciousPackages.push(...verboseObj[indicator]);
           break;
         case INDICATORS.OPEN_ISSUES:
-          suspiciousPackages.push(
-            ...(await this._validatePackage(pkgs(), this._genPackageOpenIssues, INDICATORS.OPEN_ISSUES))
-          );
+          verboseObj[indicator] = await this._validatePackage(pkgs(), this._genPackageOpenIssues, indicator);
+          suspiciousPackages.push(...verboseObj[indicator]);
           break;
         case INDICATORS.WATCHERS:
-          suspiciousPackages.push(
-            ...(await this._validatePackage(pkgs(), this._genPackageWatchers, INDICATORS.WATCHERS))
-          );
+          verboseObj[indicator] = await this._validatePackage(pkgs(), this._genPackageWatchers, indicator);
+          suspiciousPackages.push(...verboseObj[indicator]);
           break;
         case INDICATORS.FORKS:
-          suspiciousPackages.push(...(await this._validatePackage(pkgs(), this._genPackageForks, INDICATORS.FORKS)));
+          verboseObj[indicator] = await this._validatePackage(pkgs(), this._genPackageForks, indicator);
+          suspiciousPackages.push(...verboseObj[indicator]);
           break;
       }
     });
-    console.log(suspiciousPackages);
+
+    if (suspiciousPackages.length > 0) {
+      sandbox.report({
+        message: `Found the following suspicious packages: ${suspiciousPackages}`,
+        verbose: `The packages conflict with the following indicators: \n${this.createVerboseMessage(verboseObj)}`
+      });
+    }
+  }
+
+  createVerboseMessage(verboseObj = {}) {
+    if (verboseObj) {
+      return Object.entries(verboseObj).map(([key, val]) => `\n\t${key}: ${val}\n`);
+    }
   }
 
   async _filterAsync(arr = [], predicator = () => {}) {
@@ -188,6 +197,16 @@ class SuspiciousPackage extends Adviser.Rule {
       });
     }
     throw new Error('A valid array is expected');
+  }
+
+  getVerboseMessage(suspiciousPackages) {
+    let verboseOutput = '\n';
+    suspiciousPackages.forEach((packageKey, index) => {
+      verboseOutput += `  - ${packageKey}`;
+      verboseOutput += index <= suspiciousPackages.length - 2 ? '\n' : '';
+    });
+
+    return `List of unused packages:${verboseOutput}`;
   }
 }
 
