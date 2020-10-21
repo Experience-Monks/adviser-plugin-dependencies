@@ -2,6 +2,7 @@
 
 const path = require('path');
 const request = require('request-promise-native');
+// const axios = require('axios');
 const Adviser = require('adviser');
 
 const DEPENDENCIES = ['dependencies', 'devDependencies', 'peerDependencies'];
@@ -32,12 +33,13 @@ class SuspiciousPackage extends Adviser.Rule {
   async run(sandbox) {
     const suspiciousPackages = [];
     const verboseObj = {};
+    const packagejson = require(path.join(this.context.filesystem.dirname, 'package.json'));
     const indicators = Object.values(INDICATORS).filter(indicator =>
       Object.keys(this.parsedOptions.indicators).includes(indicator)
     );
 
     await this._forEachAsync(indicators, async indicator => {
-      const pkgs = () => this._getPackages().filter(pkg => !suspiciousPackages.includes(pkg));
+      const pkgs = () => this._getPackages(packagejson).filter(pkg => !suspiciousPackages.includes(pkg));
       switch (indicator) {
         case INDICATORS.STARS:
           verboseObj[indicator] = await this._validatePackage(pkgs(), this._genPackageStars, indicator);
@@ -93,8 +95,7 @@ class SuspiciousPackage extends Adviser.Rule {
     await Promise.all(arr.map(cb));
   }
 
-  _getPackages() {
-    const packagejson = require(path.join(this.context.filesystem.dirname, 'package.json'));
+  _getPackages(packagejson = {}) {
     return DEPENDENCIES.flatMap(dep => {
       if (packagejson[dep] !== undefined) {
         return Object.keys(packagejson[dep]);
@@ -173,7 +174,9 @@ class SuspiciousPackage extends Adviser.Rule {
   _genPackageWatchers = async (packageName = '') => {
     if (packageName) {
       let { github } = await this.packageData(packageName);
-      return github.subscribersCount;
+      if (github) {
+        return github.subscribersCount;
+      }
     }
     throw new Error(`"${packageName}" is not valid a package name`);
   };
@@ -181,7 +184,9 @@ class SuspiciousPackage extends Adviser.Rule {
   _genPackageForks = async (packageName = '') => {
     if (packageName) {
       let { github } = await this.packageData(packageName);
-      return github.forksCount;
+      if (github) {
+        return github.forksCount;
+      }
     }
     throw new Error(`"${packageName}" is not valid a package name`);
   };
