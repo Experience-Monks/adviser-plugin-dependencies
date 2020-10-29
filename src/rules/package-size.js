@@ -1,7 +1,7 @@
 'use strict';
 
 const path = require('path');
-const getBuiltPackageStats = require('package-build-stats');
+const { getPackageStats } = require('package-build-stats');
 const Adviser = require('adviser');
 
 const docs = require('../utils/docs');
@@ -100,7 +100,7 @@ class PackageSize extends Adviser.Rule {
     const packagejson = require(path.join(this.context.filesystem.dirname, 'package.json'));
     const names = this._getDependencyNames(packagejson, this.parsedOptions.whitelist);
     const versions = this._extractDependencyVersions([this.context.filesystem.dirname, 'node_modules'], names);
-    const stats = await this._generateDependencyStats(getBuiltPackageStats, versions);
+    const stats = await this._generateDependencyStats(getPackageStats, versions);
     const skips = this._identifySkips(stats);
     const largePackages = this._identifyLargePackages(stats, this.parsedOptions.threshold);
 
