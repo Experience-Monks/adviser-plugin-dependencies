@@ -1,0 +1,28 @@
+{
+  "collected": {
+    "metadata": {
+      "maintainers": [
+        {
+          "username": "user-1",
+          "email": "user1@test.com"
+        },
+        {
+          "username": "user-2",
+          "email": "user2@test.com"
+        },
+        {
+          "username": "user-3",
+          "email": "user3@test.com"
+        }
+      ]
+    },
+    "github": {
+      "starsCount": 10,
+      "forksCount": 5,
+      "subscribersCount": 20,
+      "issues": {
+        "count": 60
+      }
+    }
+  }
+}
