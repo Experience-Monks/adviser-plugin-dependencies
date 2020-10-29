@@ -1,8 +1,7 @@
 'use strict';
 
 const path = require('path');
-const request = require('request-promise-native');
-// const axios = require('axios');
+const axios = require('axios');
 const Adviser = require('adviser');
 
 const DEPENDENCIES = ['dependencies', 'devDependencies', 'peerDependencies'];
@@ -108,8 +107,8 @@ class SuspiciousPackage extends Adviser.Rule {
     let packageCache = {};
     return (packageName = '', option = '') => {
       if (!(packageName in packageCache)) {
-        packageCache[packageName] = request({ uri: `https://api.npms.io/v2/package/${packageName}`, json: true })
-          .then(data => data.collected)
+        packageCache[packageName] = axios(`https://api.npms.io/v2/package/${packageName}`)
+          .then(({ data }) => data.collected)
           .catch(err => {
             throw err;
           });
@@ -120,8 +119,8 @@ class SuspiciousPackage extends Adviser.Rule {
 
   _genDownloadCount(packageName = '') {
     if (packageName) {
-      return request({ uri: `https://api.npmjs.org/downloads/point/last-month/${packageName}`, json: true })
-        .then(data => data.downloads)
+      return axios(`https://api.npmjs.org/downloads/point/last-month/${packageName}`)
+        .then(({ data }) => data.downloads)
         .catch(err => {
           throw err;
         });
@@ -132,8 +131,8 @@ class SuspiciousPackage extends Adviser.Rule {
   _genPackageLastUpdated = async (packageName = '') => {
     const monthInSeconds = 2419200000;
     if (packageName) {
-      return request({ uri: `https://registry.npmjs.org/${packageName}`, json: true })
-        .then(data => (Date.now() - Date.parse(data.time.modified)) / monthInSeconds)
+      return axios(`https://registry.npmjs.org/${packageName}`)
+        .then(({ data }) => (Date.now() - Date.parse(data.time.modified)) / monthInSeconds)
         .catch(err => {
           throw err;
         });
