@@ -18,6 +18,8 @@ Object: {[ string ]: number} - Threshold values for suspicious package indicator
 
 Requires at least one attribute
 
+Default Value: `{}`
+
 Possible values:
 
 - downloads (min)
@@ -31,5 +33,7 @@ Possible values:
 ### whitelist
 
 Array: string[] - Dependencies to exclude in the package size evaluation process.
+
+Default Value: `['adviser', 'adviser-plugin-dependencies']`
 
 Optional
