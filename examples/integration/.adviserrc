@@ -10,5 +10,6 @@
     "dependencies/outdated-packages": ["warn", { "criteria": "major", "exclude": [] }],
     "dependencies/unused-packages": ["warn", { "exclude": ["chalk", "async", "typeorm"] }],
     "dependencies/package-size": ["warn", { "threshold": 25, "whitelist": ['react'] }],
+    "dependencies/suspicious-packages": ["warn",{"indicators":{"stars": 200,},"whitelist": ['async']}]
   }
 }
