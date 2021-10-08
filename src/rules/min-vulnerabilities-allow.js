@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require('path');
 const spawn = require('cross-spawn');
 const Adviser = require('adviser');
 
@@ -31,7 +32,8 @@ class MinVulnerabilityAllow extends Adviser.Rule {
       packages: []
     };
 
-    const output = spawn.sync('npm', ['audit', '--json', 'true']);
+    const projectDependencies = this.getDependecies();
+    const output = spawn.sync('npm', ['audit', '--json']);
 
     try {
       result = JSON.parse(output.stdout);
@@ -43,10 +45,14 @@ class MinVulnerabilityAllow extends Adviser.Rule {
       throw new Error(error);
     }
 
-    if (result.advisories) {
-      Object.keys(result.advisories).forEach(advisorKey => {
-        if (!this.parsedOptions.skip.includes(advisorKey)) {
-          const vulnerabilitySeverity = result.advisories[advisorKey].severity;
+    if (result.vulnerabilities) {
+      const checkList = Object.keys(
+        this.parsedOptions.production && projectDependencies ? projectDependencies : result.vulnerabilities
+      );
+
+      checkList.forEach(advisorKey => {
+        if (result.vulnerabilities[advisorKey] && !this.parsedOptions.skip.includes(advisorKey)) {
+          const vulnerabilitySeverity = result.vulnerabilities[advisorKey].severity;
           const vulnerabilitySeverityIndex = SEVERITY_LEVEL.indexOf(vulnerabilitySeverity);
 
           if (vulnerabilitySeverityIndex >= minVulnerabilityIndex) {
@@ -58,8 +64,8 @@ class MinVulnerabilityAllow extends Adviser.Rule {
                 : 1;
 
             severityAccumulator.packages.push({
-              package: result.advisories[advisorKey].module_name,
-              severity: result.advisories[advisorKey].severity
+              package: result.vulnerabilities[advisorKey].name,
+              severity: result.vulnerabilities[advisorKey].severity
             });
           }
         }
@@ -99,6 +105,16 @@ class MinVulnerabilityAllow extends Adviser.Rule {
 
     return `Packages with vulnerabilities above ${this.parsedOptions.level}: ${message}
    Run "npm audit" for more details`;
+  }
+
+  getDependecies() {
+    const packagejson = require(path.join(this.context.filesystem.dirname, 'package.json'));
+
+    if (packagejson.dependencies) {
+      return packagejson.dependencies;
+    } else {
+      return false;
+    }
   }
 }
 
