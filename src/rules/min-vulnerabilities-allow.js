@@ -45,14 +45,16 @@ class MinVulnerabilityAllow extends Adviser.Rule {
       throw new Error(error);
     }
 
-    if (result.vulnerabilities) {
+    const vulnerabilities = result.auditReportVersion === 2 ? result.vulnerabilities : result.advisories;
+
+    if (vulnerabilities) {
       const checkList = Object.keys(
-        this.parsedOptions.production && projectDependencies ? projectDependencies : result.vulnerabilities
+        this.parsedOptions.production && projectDependencies ? projectDependencies : vulnerabilities
       );
 
       checkList.forEach(advisorKey => {
-        if (result.vulnerabilities[advisorKey] && !this.parsedOptions.skip.includes(advisorKey)) {
-          const vulnerabilitySeverity = result.vulnerabilities[advisorKey].severity;
+        if (vulnerabilities[advisorKey] && !this.parsedOptions.skip.includes(advisorKey)) {
+          const vulnerabilitySeverity = vulnerabilities[advisorKey].severity;
           const vulnerabilitySeverityIndex = SEVERITY_LEVEL.indexOf(vulnerabilitySeverity);
 
           if (vulnerabilitySeverityIndex >= minVulnerabilityIndex) {
@@ -64,8 +66,8 @@ class MinVulnerabilityAllow extends Adviser.Rule {
                 : 1;
 
             severityAccumulator.packages.push({
-              package: result.vulnerabilities[advisorKey].name,
-              severity: result.vulnerabilities[advisorKey].severity
+              package: vulnerabilities[advisorKey].name,
+              severity: vulnerabilities[advisorKey].severity
             });
           }
         }
