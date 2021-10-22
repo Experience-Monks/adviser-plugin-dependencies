@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require('path');
 const spawn = require('cross-spawn');
 const Adviser = require('adviser');
 
@@ -31,7 +32,8 @@ class MinVulnerabilityAllow extends Adviser.Rule {
       packages: []
     };
 
-    const output = spawn.sync('npm', ['audit', '--json', 'true']);
+    const projectDependencies = this.getDependecies();
+    const output = spawn.sync('npm', ['audit', '--json']);
 
     try {
       result = JSON.parse(output.stdout);
@@ -43,10 +45,16 @@ class MinVulnerabilityAllow extends Adviser.Rule {
       throw new Error(error);
     }
 
-    if (result.advisories) {
-      Object.keys(result.advisories).forEach(advisorKey => {
-        if (!this.parsedOptions.skip.includes(advisorKey)) {
-          const vulnerabilitySeverity = result.advisories[advisorKey].severity;
+    const vulnerabilities = this.formatReport(result);
+
+    if (vulnerabilities) {
+      const checkList = Object.keys(
+        this.parsedOptions.production && projectDependencies ? projectDependencies : vulnerabilities
+      );
+
+      checkList.forEach(advisorKey => {
+        if (vulnerabilities[advisorKey] && !this.parsedOptions.skip.includes(advisorKey)) {
+          const vulnerabilitySeverity = vulnerabilities[advisorKey].severity;
           const vulnerabilitySeverityIndex = SEVERITY_LEVEL.indexOf(vulnerabilitySeverity);
 
           if (vulnerabilitySeverityIndex >= minVulnerabilityIndex) {
@@ -58,8 +66,8 @@ class MinVulnerabilityAllow extends Adviser.Rule {
                 : 1;
 
             severityAccumulator.packages.push({
-              package: result.advisories[advisorKey].module_name,
-              severity: result.advisories[advisorKey].severity
+              package: vulnerabilities[advisorKey].name,
+              severity: vulnerabilities[advisorKey].severity
             });
           }
         }
@@ -82,6 +90,25 @@ class MinVulnerabilityAllow extends Adviser.Rule {
     }
   }
 
+  formatReport(npmJson) {
+    const reportVersion = npmJson.auditReportVersion || 1;
+    const reportObj = reportVersion === 2 ? npmJson.vulnerabilities : npmJson.advisories;
+
+    const formatedList = Object.keys(reportObj).reduce((acc, item) => {
+      const packageName = reportVersion === 1 ? reportObj[item].module_name : item;
+
+      acc[packageName] = reportObj[item];
+
+      if (reportVersion === 1) {
+        acc[packageName].name = reportObj[item].module_name;
+      }
+
+      return acc;
+    }, {});
+
+    return formatedList;
+  }
+
   getMessage(severityCounter) {
     let counterMessage = Object.keys(severityCounter).reduce((accu, item) => {
       return `${accu} ${severityCounter[item]} ${item},`;
@@ -99,6 +126,16 @@ class MinVulnerabilityAllow extends Adviser.Rule {
 
     return `Packages with vulnerabilities above ${this.parsedOptions.level}: ${message}
    Run "npm audit" for more details`;
+  }
+
+  getDependecies() {
+    const packagejson = require(path.join(this.context.filesystem.dirname, 'package.json'));
+
+    if (packagejson.dependencies) {
+      return packagejson.dependencies;
+    } else {
+      return false;
+    }
   }
 }
 

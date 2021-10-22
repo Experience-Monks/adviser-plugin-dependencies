@@ -1,7 +1,13 @@
 {
   "plugins": ["dependencies"],
   "rules": {
-    "dependencies/min-vulnerabilities-allow": ["error", { "level": "low", "skip": ["780"] }],
+    "dependencies/min-vulnerabilities-allow": [
+      "error", 
+      { 
+        "level": "high", 
+        "skip": ["gsap"]
+      }
+    ],
     "dependencies/licenses-whitelist": [
       "warn",
       { "whitelist": ["MIT", "ISC", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause"] }
