@@ -45,7 +45,7 @@ class MinVulnerabilityAllow extends Adviser.Rule {
       throw new Error(error);
     }
 
-    const vulnerabilities = result.auditReportVersion === 2 ? result.vulnerabilities : result.advisories;
+    const vulnerabilities = this.formatReport(result);
 
     if (vulnerabilities) {
       const checkList = Object.keys(
@@ -88,6 +88,25 @@ class MinVulnerabilityAllow extends Adviser.Rule {
 
       sandbox.report(report);
     }
+  }
+
+  formatReport(npmJson) {
+    const reportVersion = npmJson.auditReportVersion || 1;
+    const reportObj = reportVersion === 2 ? npmJson.vulnerabilities : npmJson.advisories;
+
+    const formatedList = Object.keys(reportObj).reduce((acc, item) => {
+      const packageName = reportVersion === 1 ? reportObj[item].module_name : item;
+
+      acc[packageName] = reportObj[item];
+
+      if (reportVersion === 1) {
+        acc[packageName].name = reportObj[item].module_name;
+      }
+
+      return acc;
+    }, {});
+
+    return formatedList;
   }
 
   getMessage(severityCounter) {

@@ -72,6 +72,7 @@
     "adviser": "^0.7.5"
   },
   "dependencies": {
+    "adviser": "^0.7.5",
     "cross-spawn": "^6.0.5",
     "depcheck": "^1.4.2",
     "hyperlinker": "^1.0.0",

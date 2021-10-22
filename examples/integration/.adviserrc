@@ -3,7 +3,7 @@
   "rules": {
     "dependencies/min-vulnerabilities-allow": [
       "error", 
-      { "production": true,
+      { 
         "level": "high", 
         "skip": ["gsap"]
       }
