@@ -5,12 +5,12 @@ const Adviser = require('adviser');
 
 const docs = require('../utils/docs');
 
-class LicensesWhitelist extends Adviser.Rule {
+class LicensesAllowlist extends Adviser.Rule {
   constructor(context) {
     super(context);
 
-    if (!this.context.options.whitelist || !Array.isArray(this.context.options.whitelist)) {
-      throw new Error(`Wrong whitelisted licenses, an array with licenses is expected`);
+    if (!this.context.options.allowlist || !Array.isArray(this.context.options.allowlist)) {
+      throw new Error(`Wrong allow-listed licenses, an array with licenses is expected`);
     }
 
     if (this.context.options.excludePackage && !Array.isArray(this.context.options.excludePackage)) {
@@ -40,14 +40,14 @@ class LicensesWhitelist extends Adviser.Rule {
           } else {
             if (packages) {
               const packageKeysList = Object.keys(packages);
-              const noWhitelistedLicenses = packageKeysList.filter(packageKey => {
-                return !this.parsedOptions.whitelist.includes(packages[packageKey].licenses);
+              const noAllowedLicenses = packageKeysList.filter(packageKey => {
+                return !this.parsedOptions.allowlist.includes(packages[packageKey].licenses);
               });
 
-              if (noWhitelistedLicenses.length > 0) {
-                const message = `Found ${noWhitelistedLicenses.length} package${
-                  noWhitelistedLicenses.length > 1 ? 's' : ''
-                } with not whitelisted licenses`;
+              if (noAllowedLicenses.length > 0) {
+                const message = `Found ${noAllowedLicenses.length} package${
+                  noAllowedLicenses.length > 1 ? 's' : ''
+                } with not allowlisted licenses`;
 
                 const report = {
                   message
@@ -55,11 +55,11 @@ class LicensesWhitelist extends Adviser.Rule {
 
                 if (this.context.verboseMode) {
                   let verboseOutput = '\n';
-                  noWhitelistedLicenses.forEach((packageKey, index) => {
+                  noAllowedLicenses.forEach((packageKey, index) => {
                     verboseOutput += `  - ${packageKey}: ${packages[packageKey].licenses}`;
-                    verboseOutput += index <= noWhitelistedLicenses.length - 2 ? '\n' : '';
+                    verboseOutput += index <= noAllowedLicenses.length - 2 ? '\n' : '';
                   });
-                  report['verbose'] = `No whitelisted licenses:${verboseOutput}`;
+                  report['verbose'] = `No allowed licenses:${verboseOutput}`;
                 }
 
                 sandbox.report(report);
@@ -76,11 +76,11 @@ class LicensesWhitelist extends Adviser.Rule {
   }
 }
 
-LicensesWhitelist.meta = {
+LicensesAllowlist.meta = {
   category: 'Legal',
-  description: 'List of whitelisted licenses',
+  description: 'List of allowed licenses',
   recommended: true,
-  docsUrl: docs.getURL('licenses-whitelist')
+  docsUrl: docs.getURL('licenses-allowlist')
 };
 
-module.exports = LicensesWhitelist;
+module.exports = LicensesAllowlist;

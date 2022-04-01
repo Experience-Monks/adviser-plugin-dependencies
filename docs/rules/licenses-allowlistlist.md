@@ -1,24 +1,24 @@
-# Licenses Whitelist
+# Licenses Allowlist
 
-It will throw an error or warning if it finds licenses that are not whitelisted
+It will throw an error or warning if it finds licenses that are not allowed
 
 Use the adviser argument `--verbose` for extra information.
 
 ## Syntax
 
 ```
-"dependencies/licenses-whitelist": ["warn", {
-  whitelist: ["MIT"],
+"dependencies/licenses-allowlist": ["warn", {
+  allowlist: ["MIT"],
   excludePackage: ['yargs-parser@7.0.0'],
   includeNoProdPackages: true
 }]
 ```
 
-The rule `licenses-whitelist` may receive three arguments: `whitelist`, `includeNoProdPackages` and `excludePackage`.
+The rule `licenses-allowlist` may receive three arguments: `allowlist`, `includeNoProdPackages` and `excludePackage`.
 
-### whitelist
+### allowlist
 
-Array of strings - Licenses to whitelist
+Array of strings - Licenses to allowlist
 
 Required
 
