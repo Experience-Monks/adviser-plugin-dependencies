@@ -1,6 +1,6 @@
 {
   "name": "adviser-plugin-dependencies",
-  "version": "0.6.2",
+  "version": "0.6.0",
   "description": "Adviser plugin to keep healthy dependecies",
   "main": "src/index.js",
   "contributors": [
