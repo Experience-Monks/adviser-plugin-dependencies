@@ -47,9 +47,9 @@ If you don't have a `.adviserrc` you can create one running `$ adviser --init`
   "plugins": ["dependencies"],
   "rules": {
     "dependencies/min-vulnerabilities-allow": ["error", { "level": "high", "skip": ["780"] }],
-    "dependencies/licenses-whitelist": [
+    "dependencies/licenses-allowlist": [
       "warn",
-      { "whitelist": ["MIT", "ISC", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause"] }
+      { "allowlist": ["MIT", "ISC", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause"] }
     ],
     "dependencies/not-allowed-packages": ["error", { "packages": ["jquery", "lodash", "kill-port", "la-tata"] }],
     "dependencies/outdated-packages": ["warn", { "criteria": "major", "exclude": [] }]
@@ -78,7 +78,7 @@ To run your rules with `adviser`, we recommend you to create an empty folder (We
 ## Supported Rules
 
 - [min-vulnerabilities-allow](docs/rules/min-vulnerabilities-allow.md)
-- [licenses-whitelist](docs/rules/licenses-whitelist.md)
+- [licenses-allowlist](docs/rules/licenses-allowlist.md)
 - [not-allowed-packages](docs/rules/not-allowed-packages.md)
 - [outdated-packages](docs/rules/outdated-packages.md)
 - [unused-packages](docs/rules/unused-packages.md)

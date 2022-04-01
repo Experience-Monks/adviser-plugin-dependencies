@@ -16,7 +16,7 @@ All notable changes to this project will be documented in this file. See [standa
 ### Bug Fixes
 
 * bump up standard-version package ([db412ec](https://github.com/Jam3/adviser-plugin-dependencies/commit/db412ecd357c96d746c8de898543da34831f0dea))
-* licenses whitelist never ends when there isn't feedback ([131bee8](https://github.com/Jam3/adviser-plugin-dependencies/commit/131bee89029cdc4f13e1a0c4546eab3a2e8727f5))
+* licenses allowlist never ends when there isn't feedback ([131bee8](https://github.com/Jam3/adviser-plugin-dependencies/commit/131bee89029cdc4f13e1a0c4546eab3a2e8727f5))
 
 <a name="0.4.0"></a>
 # [0.4.0](https://github.com/Jam3/adviser-plugin-dependencies/compare/v0.3.0...v0.4.0) (2019-09-30)
