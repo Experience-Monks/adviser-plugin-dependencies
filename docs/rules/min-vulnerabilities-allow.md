@@ -7,7 +7,11 @@ Use the adviser argument `--verbose` for extra information.
 ## Syntax
 
 ```
-"dependencies/min-vulnerabilities-allow": ["error", { "level": "", "skip": [] }],
+"dependencies/min-vulnerabilities-allow": ["error", { 
+    "level": "", 
+    "skip": [], 
+    "production": true 
+    }],
 ```
 
 The rule `min-vulnerabilities-allow` may receive two arguments: `level` and `skip`.
