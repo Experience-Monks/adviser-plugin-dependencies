@@ -7,10 +7,14 @@ Use the adviser argument `--verbose` for extra information.
 ## Syntax
 
 ```
-"dependencies/min-vulnerabilities-allow": ["error", { "level": "", "skip": [] }],
+"dependencies/min-vulnerabilities-allow": ["error", { 
+    "level": "", 
+    "skip": [], 
+    "production": true 
+    }],
 ```
 
-The rule `min-vulnerabilities-allow` may receive two arguments: `level` and `skip`.
+The rule `min-vulnerabilities-allow` may receive three arguments: `level`, `skip` and `production`.
 
 ### level
 
@@ -27,3 +31,11 @@ Array of strings - Vulnerabilities to skip.
 Default Value: `[]`
 
 Example: `"skip":["728", "123"]`
+
+### production
+
+Boolean - skip checking packages in devDependencies.
+
+Default Value: `true`
+
+Example: `"production":true`
