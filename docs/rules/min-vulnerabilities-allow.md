@@ -31,3 +31,11 @@ Array of strings - Vulnerabilities to skip.
 Default Value: `[]`
 
 Example: `"skip":["728", "123"]`
+
+### production
+
+Boolean - skip checking packages in devDependencies.
+
+Default Value: `true`
+
+Example: `"production":true`
