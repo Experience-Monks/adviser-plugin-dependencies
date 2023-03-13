@@ -14,7 +14,7 @@ Use the adviser argument `--verbose` for extra information.
     }],
 ```
 
-The rule `min-vulnerabilities-allow` may receive two arguments: `level` and `skip`.
+The rule `min-vulnerabilities-allow` may receive three arguments: `level`, `skip` and `production`.
 
 ### level
 
